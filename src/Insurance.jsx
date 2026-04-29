@@ -285,6 +285,7 @@ const VinInput = ({ vin, vinPhoto, onVinChange, onPhotoCapture, onPhotoRemove })
   const [mode, setMode] = useState("type");
   const [focused, setFocused] = useState(false);
   const cameraRef = useRef(null);
+  const gallerRef = useRef
   const uploadRef = useRef(null);
   const handleFile = (ref) => (e) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -349,11 +350,19 @@ const VinInput = ({ vin, vinPhoto, onVinChange, onPhotoCapture, onPhotoRemove })
     <div style={{ gridColumn: "span 2" }}>
       <label style={{ display: "block", fontSize: 11.5, fontWeight: 600, letterSpacing: "0.05em",
         textTransform: "uppercase", color: brand.textMuted, marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>VIN Number</label>
-      <div style={{ display: "flex", background: brand.borderLight, borderRadius: 10, padding: 3, marginBottom: 12, gap: 2 }}>
-        <button style={tabStyle(mode === "type")} onClick={() => setMode("type")}><span style={{ fontSize: 14 }}>⌨️</span> Type</button>
-        <button style={tabStyle(mode === "camera")} onClick={() => setMode("camera")}><span style={{ fontSize: 14 }}>📷</span> Take Photo</button>
-        <button style={tabStyle(mode === "upload")} onClick={() => setMode("upload")}><span style={{ fontSize: 14 }}>📄</span> Upload</button>
-      </div>
+      <div style={{ display: "flex", gap: 10 }}>
+  <div onClick={() => cameraRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+    <span style={{ fontSize: 24 }}>📷</span>
+    <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange }}>Take Photo</span>
+  </div>
+  <div onClick={() => galleryRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+    <span style={{ fontSize: 24 }}>🖼️</span>
+    <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange }}>Choose Photo</span>
+  </div>
+</div>
+
+<input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: "none" }} />
+<input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
       {mode === "type" && (
         <input value={vin} onChange={(e) => onVinChange(e.target.value.toUpperCase())} placeholder="e.g. 1HGBH41JXMN109186" maxLength={17}
           style={{ ...inputBase, ...(focused ? focusRing : {}), fontFamily: "'DM Sans', monospace", letterSpacing: "0.12em" }}
