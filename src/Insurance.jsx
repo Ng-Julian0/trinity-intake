@@ -1,52 +1,33 @@
 // Insurance.jsx — Trinity Solutions Insurance Agency
-// Frontend: React + Supabase JS client
-// Setup:  npm install @supabase/supabase-js
-//         Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env
-
 import { useState, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// ── Supabase client ────────────────────────────────────────────────────────────
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
-// ── Photo upload helper ────────────────────────────────────────────────────────
-// Converts a base64 data-URL to a Blob and uploads it to Supabase Storage.
-// Returns the public URL of the stored file.
 async function uploadPhoto(dataUrl, storagePath) {
   const res  = await fetch(dataUrl);
   const blob = await res.blob();
   const ext  = blob.type.includes("png") ? "png" : "jpg";
   const path = `${storagePath}.${ext}`;
-
   const { data, error } = await supabase.storage
     .from("intake-photos")
     .upload(path, blob, { contentType: blob.type, upsert: true });
-
   if (error) throw new Error(`Photo upload failed (${path}): ${error.message}`);
-
-  const { data: { publicUrl } } = supabase.storage
-    .from("intake-photos")
-    .getPublicUrl(data.path);
-
+  const { data: { publicUrl } } = supabase.storage.from("intake-photos").getPublicUrl(data.path);
   return publicUrl;
 }
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@400;500;600;700&display=swap');`;
+const LOGO_SRC = "";
 
-// ── Paste your original LOGO_SRC base64 string here ──────────────────────────
-// const LOGO_SRC = "data:image/png;base64,iVBORw0KGgo...";
-// (copy the full LOGO_SRC value from your original Insurance.jsx)
-const LOGO_SRC = ""; // ← replace with your logo base64
-
-/* ── Brand Colors ── */
 const brand = {
   black: "#1a1a1a", darkGray: "#2d2d2d",
   orange: "#e07a1a", orangeLight: "#f0943a",
-  green: "#2e8c3a",  greenLight: "#3da34a",
-  gold: "#d4a020",   goldLight: "#e5b83a",
+  green: "#2e8c3a", greenLight: "#3da34a",
+  gold: "#d4a020", goldLight: "#e5b83a",
   accent: "#e07a1a",
   bg: "#fafaf7", bgWarm: "#f5f3ee", bgCard: "#ffffff", bgField: "#fafaf7",
   border: "#d8d4cc", borderLight: "#e8e4dc",
@@ -187,8 +168,8 @@ const AddButton = ({ label, onClick }) => (
 
 /* ── License Photo Capture ── */
 const LicenseCapture = ({ label, image, onCapture, onRemove }) => {
-  const fileRef = useRef(null);
-  const [hover, setHover] = useState(false);
+  const cameraRef  = useRef(null);
+  const galleryRef = useRef(null);
   const handleFile = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     const reader = new FileReader();
@@ -200,15 +181,19 @@ const LicenseCapture = ({ label, image, onCapture, onRemove }) => {
       <label style={{ display: "block", fontSize: 11.5, fontWeight: 600, letterSpacing: "0.05em",
         textTransform: "uppercase", color: brand.textMuted, marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>{label}</label>
       {!image ? (
-        <div onClick={() => fileRef.current?.click()} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-          style={{ border: `2px dashed ${hover ? brand.orange : brand.border}`, borderRadius: 12, padding: "28px 16px",
-            cursor: "pointer", background: hover ? "#fef6ee" : brand.bgWarm,
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "all 0.2s" }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={brand.orange} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
-          </svg>
-          <span style={{ fontSize: 13, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>Take Photo or Upload</span>
-          <span style={{ fontSize: 11.5, color: brand.textLight, fontFamily: "'DM Sans', sans-serif" }}>Tap to use camera or choose file</span>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div onClick={() => cameraRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#fef6ee"; e.currentTarget.style.borderColor = brand.orange; }}
+            onMouseLeave={e => { e.currentTarget.style.background = brand.bgWarm; e.currentTarget.style.borderColor = brand.border; }}>
+            <span style={{ fontSize: 24 }}>📷</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>Take Photo</span>
+          </div>
+          <div onClick={() => galleryRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#fef6ee"; e.currentTarget.style.borderColor = brand.orange; }}
+            onMouseLeave={e => { e.currentTarget.style.background = brand.bgWarm; e.currentTarget.style.borderColor = brand.border; }}>
+            <span style={{ fontSize: 24 }}>🖼️</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>Choose Photo</span>
+          </div>
         </div>
       ) : (
         <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: `1.5px solid ${brand.border}` }}>
@@ -216,8 +201,10 @@ const LicenseCapture = ({ label, image, onCapture, onRemove }) => {
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
             background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 40%, transparent 70%, rgba(0,0,0,0.25) 100%)" }} />
           <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 6 }}>
-            <button onClick={() => fileRef.current?.click()} style={{ padding: "6px 12px", borderRadius: 8, border: "none",
+            <button onClick={() => cameraRef.current?.click()} style={{ padding: "6px 12px", borderRadius: 8, border: "none",
               background: "rgba(255,255,255,0.92)", cursor: "pointer", fontSize: 12, fontWeight: 600, color: brand.black, fontFamily: "'DM Sans', sans-serif" }}>Retake</button>
+            <button onClick={() => galleryRef.current?.click()} style={{ padding: "6px 12px", borderRadius: 8, border: "none",
+              background: "rgba(255,255,255,0.92)", cursor: "pointer", fontSize: 12, fontWeight: 600, color: brand.black, fontFamily: "'DM Sans', sans-serif" }}>Replace</button>
             <button onClick={onRemove} style={{ padding: "6px 12px", borderRadius: 8, border: "none",
               background: "rgba(192,57,43,0.9)", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#fff", fontFamily: "'DM Sans', sans-serif" }}>Remove</button>
           </div>
@@ -225,7 +212,8 @@ const LicenseCapture = ({ label, image, onCapture, onRemove }) => {
             background: `rgba(46,140,58,0.9)`, fontSize: 11, fontWeight: 700, color: "#fff", fontFamily: "'DM Sans', sans-serif" }}>✓ Captured</div>
         </div>
       )}
-      <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
+      <input ref={cameraRef}  type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: "none" }} />
+      <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
     </div>
   );
 };
@@ -284,13 +272,16 @@ const DriverCard = ({ driver, index, total, onChange, onRemove }) => {
 const VinInput = ({ vin, vinPhoto, onVinChange, onPhotoCapture, onPhotoRemove }) => {
   const [mode, setMode] = useState("type");
   const [focused, setFocused] = useState(false);
-  const cameraRef = useRef(null);
-  const gallerRef = useRef
-  const uploadRef = useRef(null);
-  const handleFile = (ref) => (e) => {
+  const cameraRef  = useRef(null);
+  const galleryRef = useRef(null);
+
+  const handleFile = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
-    const r = new FileReader(); r.onload = (ev) => onPhotoCapture(ev.target.result); r.readAsDataURL(file); e.target.value = "";
+    const r = new FileReader();
+    r.onload = (ev) => onPhotoCapture(ev.target.result);
+    r.readAsDataURL(file); e.target.value = "";
   };
+
   const tabStyle = (active) => ({
     flex: 1, padding: "8px 0", border: "none", borderRadius: 8, cursor: "pointer",
     fontSize: 12.5, fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
@@ -298,86 +289,75 @@ const VinInput = ({ vin, vinPhoto, onVinChange, onPhotoCapture, onPhotoRemove })
     boxShadow: active ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
     transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
   });
-  const photoArea = (onClick, hasImg, imgSrc, retakeRef, isUpload) => (
-    <div>
-      {!hasImg ? (
-        <div onClick={onClick} style={{
-          border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "24px 16px", cursor: "pointer",
-          background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.2s",
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = "#fef6ee"; e.currentTarget.style.borderColor = brand.orange; }}
-          onMouseLeave={e => { e.currentTarget.style.background = brand.bgWarm; e.currentTarget.style.borderColor = brand.border; }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={brand.orange} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            {isUpload ? (<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></>)
-              : (<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></>)}
-          </svg>
-          <span style={{ fontSize: 13, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>
-            {isUpload ? "Upload from Binder or Gallery" : "Tap to Open Camera"}
-          </span>
-          <span style={{ fontSize: 11.5, color: brand.textLight, fontFamily: "'DM Sans', sans-serif" }}>
-            {isUpload ? "Choose a photo showing the VIN" : "Take a clear photo of the VIN plate"}
-          </span>
-        </div>
-      ) : (
-        <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: `1.5px solid ${brand.border}` }}>
-          <img src={imgSrc} alt="VIN" style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} />
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-            background: "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 40%)" }} />
-          <div style={{ position: "absolute", top: 8, right: 8, padding: "4px 10px", borderRadius: 6,
-            background: `rgba(46,140,58,0.9)`, fontSize: 11, fontWeight: 700, color: "#fff" }}>
-            ✓ {isUpload ? "Uploaded" : "Captured"}
-          </div>
-          <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 6 }}>
-            <button onClick={() => retakeRef.current?.click()} style={{
-              padding: "6px 12px", borderRadius: 8, border: "none", background: "rgba(255,255,255,0.92)",
-              cursor: "pointer", fontSize: 12, fontWeight: 600, color: brand.black, fontFamily: "'DM Sans', sans-serif",
-            }}>{isUpload ? "Replace" : "Retake"}</button>
-            <button onClick={onPhotoRemove} style={{
-              padding: "6px 12px", borderRadius: 8, border: "none", background: "rgba(192,57,43,0.9)",
-              cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#fff", fontFamily: "'DM Sans', sans-serif",
-            }}>Remove</button>
-          </div>
-        </div>
-      )}
-      {vin && hasImg && (
-        <div style={{ marginTop: 8, padding: "8px 12px", background: "#e9f5eb", borderRadius: 8, fontSize: 13, color: brand.green }}>
-          VIN also typed: <strong style={{ letterSpacing: "0.08em" }}>{vin}</strong>
-        </div>
-      )}
-    </div>
-  );
+
   return (
     <div style={{ gridColumn: "span 2" }}>
       <label style={{ display: "block", fontSize: 11.5, fontWeight: 600, letterSpacing: "0.05em",
         textTransform: "uppercase", color: brand.textMuted, marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>VIN Number</label>
-      <div style={{ display: "flex", gap: 10 }}>
-  <div onClick={() => cameraRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-    <span style={{ fontSize: 24 }}>📷</span>
-    <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange }}>Take Photo</span>
-  </div>
-  <div onClick={() => galleryRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-    <span style={{ fontSize: 24 }}>🖼️</span>
-    <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange }}>Choose Photo</span>
-  </div>
-</div>
+      <div style={{ display: "flex", background: brand.borderLight, borderRadius: 10, padding: 3, marginBottom: 12, gap: 2 }}>
+        <button style={tabStyle(mode === "type")}   onClick={() => setMode("type")}>  <span style={{ fontSize: 14 }}>⌨️</span> Type</button>
+        <button style={tabStyle(mode === "camera")} onClick={() => setMode("camera")}><span style={{ fontSize: 14 }}>📷</span> Take Photo</button>
+        <button style={tabStyle(mode === "upload")} onClick={() => setMode("upload")}><span style={{ fontSize: 14 }}>🖼️</span> Choose Photo</button>
+      </div>
 
-<input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: "none" }} />
-<input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
       {mode === "type" && (
-        <input value={vin} onChange={(e) => onVinChange(e.target.value.toUpperCase())} placeholder="e.g. 1HGBH41JXMN109186" maxLength={17}
+        <input value={vin} onChange={(e) => onVinChange(e.target.value.toUpperCase())}
+          placeholder="e.g. 1HGBH41JXMN109186" maxLength={17}
           style={{ ...inputBase, ...(focused ? focusRing : {}), fontFamily: "'DM Sans', monospace", letterSpacing: "0.12em" }}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
       )}
-      {mode === "camera" && (<>{photoArea(() => cameraRef.current?.click(), !!vinPhoto, vinPhoto, cameraRef, false)}
-        <input ref={cameraRef} type="file" accept="image/*" onChange={handleFile(cameraRef)} style={{ display: "none" }} /></>)}
-      {mode === "upload" && (<>{photoArea(() => uploadRef.current?.click(), !!vinPhoto, vinPhoto, uploadRef, true)}
-        <input ref={uploadRef} type="file" accept="image/*" onChange={handleFile(uploadRef)} style={{ display: "none" }} /></>)}
+
+      {(mode === "camera" || mode === "upload") && (
+        <div>
+          {!vinPhoto ? (
+            <div onClick={() => mode === "camera" ? cameraRef.current?.click() : galleryRef.current?.click()}
+              style={{ border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "24px 16px", cursor: "pointer",
+                background: brand.bgWarm, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#fef6ee"; e.currentTarget.style.borderColor = brand.orange; }}
+              onMouseLeave={e => { e.currentTarget.style.background = brand.bgWarm; e.currentTarget.style.borderColor = brand.border; }}>
+              <span style={{ fontSize: 32 }}>{mode === "camera" ? "📷" : "🖼️"}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>
+                {mode === "camera" ? "Tap to Open Camera" : "Choose from Gallery"}
+              </span>
+              <span style={{ fontSize: 11.5, color: brand.textLight, fontFamily: "'DM Sans', sans-serif" }}>
+                {mode === "camera" ? "Take a clear photo of the VIN plate" : "Select a photo showing the VIN"}
+              </span>
+            </div>
+          ) : (
+            <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: `1.5px solid ${brand.border}` }}>
+              <img src={vinPhoto} alt="VIN" style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} />
+              <div style={{ position: "absolute", top: 8, right: 8, padding: "4px 10px", borderRadius: 6,
+                background: `rgba(46,140,58,0.9)`, fontSize: 11, fontWeight: 700, color: "#fff" }}>✓ Captured</div>
+              <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 6 }}>
+                <button onClick={() => mode === "camera" ? cameraRef.current?.click() : galleryRef.current?.click()} style={{
+                  padding: "6px 12px", borderRadius: 8, border: "none", background: "rgba(255,255,255,0.92)",
+                  cursor: "pointer", fontSize: 12, fontWeight: 600, color: brand.black, fontFamily: "'DM Sans', sans-serif",
+                }}>Retake</button>
+                <button onClick={onPhotoRemove} style={{
+                  padding: "6px 12px", borderRadius: 8, border: "none", background: "rgba(192,57,43,0.9)",
+                  cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#fff", fontFamily: "'DM Sans', sans-serif",
+                }}>Remove</button>
+              </div>
+            </div>
+          )}
+          {vin && vinPhoto && (
+            <div style={{ marginTop: 8, padding: "8px 12px", background: "#e9f5eb", borderRadius: 8, fontSize: 13, color: brand.green }}>
+              VIN also typed: <strong style={{ letterSpacing: "0.08em" }}>{vin}</strong>
+            </div>
+          )}
+        </div>
+      )}
+
       {mode !== "type" && !vin && vinPhoto && (
         <div style={{ marginTop: 10 }}>
-          <input value={vin} onChange={(e) => onVinChange(e.target.value.toUpperCase())} placeholder="Optionally type VIN here too" maxLength={17}
+          <input value={vin} onChange={(e) => onVinChange(e.target.value.toUpperCase())}
+            placeholder="Optionally type VIN here too" maxLength={17}
             style={{ ...inputBase, fontSize: 13, padding: "9px 12px", fontFamily: "'DM Sans', monospace", letterSpacing: "0.1em" }} />
         </div>
       )}
+
+      <input ref={cameraRef}  type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: "none" }} />
+      <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
     </div>
   );
 };
@@ -392,27 +372,30 @@ const VehicleCard = ({ vehicle, index, total, onChange, onRemove }) => {
     <div style={{ background: brand.bgWarm, borderRadius: 14, padding: "24px 28px", marginBottom: 16, border: `1px solid ${brand.borderLight}` }}>
       <ItemHeader number={index + 1} title={vLabel} onRemove={onRemove} canRemove={total > 1} />
       <Grid cols={3}>
-        <Input label="Year" value={vehicle.year} onChange={u("year")} />
-        <Input label="Make" value={vehicle.make} onChange={u("make")} />
+        <Input label="Year"  value={vehicle.year}  onChange={u("year")} />
+        <Input label="Make"  value={vehicle.make}  onChange={u("make")} />
         <Input label="Model" value={vehicle.model} onChange={u("model")} />
       </Grid>
       <div style={{ height: 14 }} />
       <Grid cols={2}>
-        <Input label="Trim / Style" value={vehicle.trim} onChange={u("trim")} />
-        <Input label="Current Mileage" value={vehicle.mileage} onChange={u("mileage")} />
+        <Input label="Trim / Style"     value={vehicle.trim}    onChange={u("trim")} />
+        <Input label="Current Mileage"  value={vehicle.mileage} onChange={u("mileage")} />
         <VinInput vin={vehicle.vin} vinPhoto={vehicle.vinPhoto}
           onVinChange={(val) => onChange({ ...vehicle, vin: val })}
           onPhotoCapture={(img) => onChange({ ...vehicle, vinPhoto: img })}
           onPhotoRemove={() => onChange({ ...vehicle, vinPhoto: null })} />
         <Input label="Est. Annual Miles" value={vehicle.annualMiles} onChange={u("annualMiles")} />
         <Select label="Primary Use" options={[
-          { value: "commute", label: "Commute to Work/School" }, { value: "pleasure", label: "Pleasure Only" },
-          { value: "business", label: "Business Use" }, { value: "rideshare", label: "Rideshare / Delivery" },
+          { value: "commute",   label: "Commute to Work/School" },
+          { value: "pleasure",  label: "Pleasure Only" },
+          { value: "business",  label: "Business Use" },
+          { value: "rideshare", label: "Rideshare / Delivery" },
         ]} value={vehicle.usage} onChange={u("usage")} />
         <Input label="Garage ZIP Code" value={vehicle.garageZip} onChange={u("garageZip")} />
         <Select label="Ownership Status" options={[
-          { value: "owned", label: "Owned Outright" }, { value: "financed", label: "Financed" },
-          { value: "leased", label: "Leased" },
+          { value: "owned",    label: "Owned Outright" },
+          { value: "financed", label: "Financed" },
+          { value: "leased",   label: "Leased" },
         ]} value={vehicle.ownership} onChange={u("ownership")} />
       </Grid>
       <Divider />
@@ -422,26 +405,34 @@ const VehicleCard = ({ vehicle, index, total, onChange, onRemove }) => {
       </div>
       <Grid cols={2}>
         <Select label="Bodily Injury Limits" options={[
-          { value: "25/50", label: "$25K / $50K" }, { value: "50/100", label: "$50K / $100K" },
-          { value: "100/300", label: "$100K / $300K" }, { value: "250/500", label: "$250K / $500K" },
+          { value: "25/50",   label: "$25K / $50K" },
+          { value: "50/100",  label: "$50K / $100K" },
+          { value: "100/300", label: "$100K / $300K" },
+          { value: "250/500", label: "$250K / $500K" },
         ]} value={vehicle.bodilyInjury} onChange={u("bodilyInjury")} />
         <Select label="Property Damage" options={[
-          { value: "25000", label: "$25,000" }, { value: "50000", label: "$50,000" },
-          { value: "100000", label: "$100,000" }, { value: "250000", label: "$250,000" },
+          { value: "25000",  label: "$25,000" },
+          { value: "50000",  label: "$50,000" },
+          { value: "100000", label: "$100,000" },
+          { value: "250000", label: "$250,000" },
         ]} value={vehicle.propertyDamage} onChange={u("propertyDamage")} />
         <Select label="Collision Deductible" options={[
-          { value: "250", label: "$250" }, { value: "500", label: "$500" },
-          { value: "1000", label: "$1,000" }, { value: "none", label: "Decline Coverage" },
+          { value: "250",  label: "$250" },
+          { value: "500",  label: "$500" },
+          { value: "1000", label: "$1,000" },
+          { value: "none", label: "Decline Coverage" },
         ]} value={vehicle.collision} onChange={u("collision")} />
         <Select label="Comprehensive Deductible" options={[
-          { value: "250", label: "$250" }, { value: "500", label: "$500" },
-          { value: "1000", label: "$1,000" }, { value: "none", label: "Decline Coverage" },
+          { value: "250",  label: "$250" },
+          { value: "500",  label: "$500" },
+          { value: "1000", label: "$1,000" },
+          { value: "none", label: "Decline Coverage" },
         ]} value={vehicle.comprehensive} onChange={u("comprehensive")} />
       </Grid>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginTop: 16 }}>
-        <Toggle label="Uninsured Motorist" checked={vehicle.uninsured} onChange={t("uninsured")} />
-        <Toggle label="Roadside Assistance" checked={vehicle.roadside} onChange={t("roadside")} />
-        <Toggle label="Rental Reimbursement" checked={vehicle.rental} onChange={t("rental")} />
+        <Toggle label="Uninsured Motorist"    checked={vehicle.uninsured} onChange={t("uninsured")} />
+        <Toggle label="Roadside Assistance"   checked={vehicle.roadside}  onChange={t("roadside")} />
+        <Toggle label="Rental Reimbursement"  checked={vehicle.rental}    onChange={t("rental")} />
       </div>
     </div>
   );
@@ -449,9 +440,14 @@ const VehicleCard = ({ vehicle, index, total, onChange, onRemove }) => {
 
 /* ── Insurance Binder Upload ── */
 const BinderUpload = ({ photos, onAdd, onRemove }) => {
-  const fileRef = useRef(null);
+  const cameraRef  = useRef(null);
+  const galleryRef = useRef(null);
   const handleFiles = (e) => {
-    Array.from(e.target.files || []).forEach(file => { const r = new FileReader(); r.onload = (ev) => onAdd(ev.target.result); r.readAsDataURL(file); });
+    Array.from(e.target.files || []).forEach(file => {
+      const r = new FileReader();
+      r.onload = (ev) => onAdd(ev.target.result);
+      r.readAsDataURL(file);
+    });
     e.target.value = "";
   };
   return (
@@ -477,21 +473,26 @@ const BinderUpload = ({ photos, onAdd, onRemove }) => {
           ))}
         </div>
       )}
-      <div onClick={() => fileRef.current?.click()} style={{
-        border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 16px", cursor: "pointer",
-        background: brand.bgField, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.2s",
-      }}
-        onMouseEnter={e => { e.currentTarget.style.background = "#fef6ee"; e.currentTarget.style.borderColor = brand.orange; }}
-        onMouseLeave={e => { e.currentTarget.style.background = brand.bgField; e.currentTarget.style.borderColor = brand.border; }}>
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={brand.orange} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
-        </svg>
-        <span style={{ fontSize: 13, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>
-          {photos.length > 0 ? "Add Another Page" : "Take Photo or Upload"}
-        </span>
-        <span style={{ fontSize: 11.5, color: brand.textLight, fontFamily: "'DM Sans', sans-serif" }}>Tap to use camera or choose file</span>
+      <div style={{ display: "flex", gap: 10 }}>
+        <div onClick={() => cameraRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgField, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+          onMouseEnter={e => { e.currentTarget.style.background = "#fef6ee"; e.currentTarget.style.borderColor = brand.orange; }}
+          onMouseLeave={e => { e.currentTarget.style.background = brand.bgField; e.currentTarget.style.borderColor = brand.border; }}>
+          <span style={{ fontSize: 24 }}>📷</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>
+            {photos.length > 0 ? "Add Another (Camera)" : "Take Photo"}
+          </span>
+        </div>
+        <div onClick={() => galleryRef.current?.click()} style={{ flex: 1, border: `2px dashed ${brand.border}`, borderRadius: 12, padding: "20px 10px", cursor: "pointer", background: brand.bgField, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+          onMouseEnter={e => { e.currentTarget.style.background = "#fef6ee"; e.currentTarget.style.borderColor = brand.orange; }}
+          onMouseLeave={e => { e.currentTarget.style.background = brand.bgField; e.currentTarget.style.borderColor = brand.border; }}>
+          <span style={{ fontSize: 24 }}>🖼️</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: brand.orange, fontFamily: "'DM Sans', sans-serif" }}>
+            {photos.length > 0 ? "Add Another (Gallery)" : "Choose Photo"}
+          </span>
+        </div>
       </div>
-      <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: "none" }} />
+      <input ref={cameraRef}  type="file" accept="image/*" capture="environment" onChange={handleFiles} style={{ display: "none" }} />
+      <input ref={galleryRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: "none" }} />
     </div>
   );
 };
@@ -500,9 +501,9 @@ const BinderUpload = ({ photos, onAdd, onRemove }) => {
 const StatusBanner = ({ status, message }) => {
   if (!status) return null;
   const c = {
-    sending: { bg: "#fef6ee", bd: brand.border,  tx: brand.textMuted },
-    success: { bg: "#e9f5eb", bd: "#a5d6a7",      tx: brand.success },
-    error:   { bg: "#fce8e6", bd: "#f5b7b1",      tx: brand.error },
+    sending: { bg: "#fef6ee", bd: brand.border, tx: brand.textMuted },
+    success: { bg: "#e9f5eb", bd: "#a5d6a7",    tx: brand.success },
+    error:   { bg: "#fce8e6", bd: "#f5b7b1",    tx: brand.error },
   }[status];
   return (
     <div style={{ padding: "14px 20px", borderRadius: 10, marginTop: 16, width: "100%",
@@ -550,15 +551,13 @@ const StepIndicator = ({ current, steps }) => (
 
 /* ── Main App ── */
 export default function AutoInsuranceIntake() {
-  const [step, setStep]               = useState(0);
-  const [drivers, setDrivers]         = useState([makeDriver(0)]);
-  const [vehicles, setVehicles]       = useState([makeVehicle(0)]);
-  const [status, setStatus]           = useState(null);
-  const [statusMsg, setStatusMsg]     = useState("");
+  const [step, setStep]                 = useState(0);
+  const [drivers, setDrivers]           = useState([makeDriver(0)]);
+  const [vehicles, setVehicles]         = useState([makeVehicle(0)]);
+  const [status, setStatus]             = useState(null);
+  const [statusMsg, setStatusMsg]       = useState("");
   const [binderPhotos, setBinderPhotos] = useState([]);
-  const [applicant, setApplicant]     = useState({
-    email: "", phone: "", address: "", city: "", state: "", zip: "",
-  });
+  const [applicant, setApplicant]       = useState({ email: "", phone: "", address: "", city: "", state: "", zip: "" });
   const ua = (k) => (e) => setApplicant({ ...applicant, [k]: e.target.value });
 
   const updateDriver  = (idx, d) => { const a = [...drivers];  a[idx] = d; setDrivers(a); };
@@ -568,7 +567,6 @@ export default function AutoInsuranceIntake() {
   const removeVehicle = (idx)    => setVehicles(vehicles.filter((_, i) => i !== idx));
   const addVehicle    = ()       => setVehicles([...vehicles, makeVehicle(vehicles.length)]);
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     const primary = drivers[0];
     if (!primary.firstName || !primary.lastName) {
@@ -577,47 +575,32 @@ export default function AutoInsuranceIntake() {
       setTimeout(() => setStatus(null), 4000);
       return;
     }
-
     setStatus("sending");
     setStatusMsg("Uploading photos…");
-
     try {
       const submissionId = crypto.randomUUID();
-
-      // 1. Upload all driver license photos → replace base64 with storage URLs
       const driversWithUrls = await Promise.all(
         drivers.map(async (d, i) => {
           const { licenseFront, ...rest } = d;
           const licenseFrontUrl = licenseFront
-            ? await uploadPhoto(licenseFront, `${submissionId}/drivers/${i}/license-front`)
-            : null;
+            ? await uploadPhoto(licenseFront, `${submissionId}/drivers/${i}/license-front`) : null;
           return { ...rest, licenseFrontUrl };
         })
       );
-
-      // 2. Upload all VIN photos
       const vehiclesWithUrls = await Promise.all(
         vehicles.map(async (v, i) => {
           const { vinPhoto, ...rest } = v;
           const vinPhotoUrl = vinPhoto
-            ? await uploadPhoto(vinPhoto, `${submissionId}/vehicles/${i}/vin`)
-            : null;
+            ? await uploadPhoto(vinPhoto, `${submissionId}/vehicles/${i}/vin`) : null;
           return { ...rest, vinPhotoUrl };
         })
       );
-
-      // 3. Upload binder pages
       const binderPhotoUrls = await Promise.all(
-        binderPhotos.map((img, i) =>
-          uploadPhoto(img, `${submissionId}/binder/page-${i}`)
-        )
+        binderPhotos.map((img, i) => uploadPhoto(img, `${submissionId}/binder/page-${i}`))
       );
-
       setStatusMsg("Saving your application…");
-
-      // 4. Insert row into Postgres
       const { error: dbError } = await supabase.from("submissions").insert({
-        id:                submissionId,
+        id: submissionId,
         applicant_email:   applicant.email,
         applicant_phone:   applicant.phone,
         applicant_address: applicant.address,
@@ -628,23 +611,17 @@ export default function AutoInsuranceIntake() {
         vehicles:          vehiclesWithUrls,
         binder_photo_urls: binderPhotoUrls,
       });
-
       if (dbError) throw new Error(dbError.message);
-
       setStatusMsg("Sending notification email…");
-
-      // 5. Call Vercel API route → generates PDF + sends Resend email
       const fnRes = await fetch("/api/send-intake-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submissionId }),
       });
-
       if (!fnRes.ok) {
         const err = await fnRes.json().catch(() => ({}));
         throw new Error(err.error ?? `Email API error ${fnRes.status}`);
       }
-
       setStatus("success");
       setStatusMsg("Application submitted! A Trinity Solutions agent will be in touch shortly.");
       setTimeout(() => setStatus(null), 6000);
@@ -656,7 +633,6 @@ export default function AutoInsuranceIntake() {
     }
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   const steps = ["Drivers", "Vehicles", "Review"];
   const reviewLabel = (l, v) => (
     <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: `1px solid ${brand.borderLight}` }}>
@@ -676,7 +652,6 @@ export default function AutoInsuranceIntake() {
         @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
       `}</style>
 
-      {/* ── Branded Header ── */}
       <div style={{ background: brand.black, position: "relative", overflow: "hidden" }}>
         <div style={{ height: 4, background: `linear-gradient(90deg, ${brand.orange} 0%, ${brand.orange} 33%, ${brand.green} 33%, ${brand.green} 66%, ${brand.gold} 66%, ${brand.gold} 100%)` }} />
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "28px 20px 40px" }}>
@@ -710,33 +685,28 @@ export default function AutoInsuranceIntake() {
         </div>
       </div>
 
-      {/* ── Form ── */}
       <div style={{ maxWidth: 720, margin: "-16px auto 0", padding: "0 20px 60px", position: "relative", zIndex: 1 }}>
         <div style={{ background: "#fff", borderRadius: 20, padding: "32px 36px 36px",
           boxShadow: "0 4px 24px rgba(26,26,26,0.06), 0 1px 3px rgba(26,26,26,0.04)",
           border: `1px solid ${brand.borderLight}` }}>
-
           <StepIndicator current={step} steps={steps} />
-
           <div key={step} style={{ animation: "slideUp 0.3s ease-out" }}>
 
-            {/* ── Step 0: Drivers ── */}
             {step === 0 && (
               <div>
                 <SectionHeader icon="🏠" title="Applicant Contact" subtitle="Primary contact and home address for the policy" />
                 <div style={{ background: brand.bgWarm, borderRadius: 14, padding: "24px 28px", marginBottom: 24, border: `1px solid ${brand.borderLight}` }}>
                   <Grid cols={2}>
                     <Input label="Email Address" type="email" value={applicant.email} onChange={ua("email")} placeholder="you@email.com" />
-                    <Input label="Phone Number" type="tel" value={applicant.phone} onChange={ua("phone")} placeholder="(804) 555-1234" />
+                    <Input label="Phone Number"  type="tel"   value={applicant.phone} onChange={ua("phone")} placeholder="(804) 555-1234" />
                     <Input label="Home Address" value={applicant.address} onChange={ua("address")} span={2} placeholder="Street address" />
                     <Input label="City" value={applicant.city} onChange={ua("city")} />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-                      <Input label="State" value={applicant.state} onChange={ua("state")} placeholder="VA" />
-                      <Input label="ZIP Code" value={applicant.zip} onChange={ua("zip")} placeholder="23059" />
+                      <Input label="State"    value={applicant.state} onChange={ua("state")} placeholder="VA" />
+                      <Input label="ZIP Code" value={applicant.zip}   onChange={ua("zip")}   placeholder="23059" />
                     </div>
                   </Grid>
                 </div>
-
                 <SectionHeader icon="👥" title="Drivers" subtitle={`${drivers.length} driver${drivers.length > 1 ? "s" : ""} — add everyone who will drive these vehicles`} />
                 {drivers.map((d, i) => (
                   <DriverCard key={d.id} driver={d} index={i} total={drivers.length}
@@ -749,7 +719,6 @@ export default function AutoInsuranceIntake() {
               </div>
             )}
 
-            {/* ── Step 1: Vehicles ── */}
             {step === 1 && (
               <div>
                 <SectionHeader icon="🚘" title="Vehicles" subtitle={`${vehicles.length} vehicle${vehicles.length > 1 ? "s" : ""} — include all vehicles for this policy`} />
@@ -761,7 +730,6 @@ export default function AutoInsuranceIntake() {
               </div>
             )}
 
-            {/* ── Step 2: Review ── */}
             {step === 2 && (
               <div>
                 <SectionHeader icon="📋" title="Review & Submit" subtitle="Please confirm all information is correct" />
@@ -776,11 +744,11 @@ export default function AutoInsuranceIntake() {
                     <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: 16, color: brand.black, marginBottom: 10 }}>
                       Driver {i + 1}: {d.firstName} {d.lastName} {d.relation === "self" ? "(Applicant)" : `(${d.relation})`}
                     </div>
-                    {reviewLabel("Email",               d.email)}
-                    {reviewLabel("Phone",               d.phone)}
-                    {reviewLabel("DOB",                 d.dob)}
-                    {reviewLabel("License",             `${d.licenseNumber} — ${d.licenseState}`)}
-                    {reviewLabel("Accidents / Viol.",   `${d.accidents} / ${d.violations}`)}
+                    {reviewLabel("Email",             d.email)}
+                    {reviewLabel("Phone",             d.phone)}
+                    {reviewLabel("DOB",               d.dob)}
+                    {reviewLabel("License",           `${d.licenseNumber} — ${d.licenseState}`)}
+                    {reviewLabel("Accidents / Viol.", `${d.accidents} / ${d.violations}`)}
                     {d.srFiling && reviewLabel("SR-22/FR-44", "Required")}
                     {d.licenseFront && (
                       <div style={{ marginTop: 12 }}>
@@ -832,9 +800,7 @@ export default function AutoInsuranceIntake() {
             )}
           </div>
 
-          {/* Navigation */}
-          <div style={{ marginTop: 28, display: "flex", justifyContent: step === 0 ? "flex-end" : "space-between",
-            alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ marginTop: 28, display: "flex", justifyContent: step === 0 ? "flex-end" : "space-between", alignItems: "flex-start", flexWrap: "wrap" }}>
             {step > 0 && (
               <button onClick={() => { setStep(step - 1); setStatus(null); }} style={{
                 padding: "13px 32px", border: `1.5px solid ${brand.border}`, borderRadius: 12,
@@ -867,7 +833,6 @@ export default function AutoInsuranceIntake() {
           {step === 2 && <StatusBanner status={status} message={statusMsg} />}
         </div>
 
-        {/* Footer */}
         <div style={{ textAlign: "center", marginTop: 24, paddingBottom: 20 }}>
           {LOGO_SRC && <img src={LOGO_SRC} alt="Trinity Solutions" style={{ width: 36, height: 36, borderRadius: 8, marginBottom: 8 }} />}
           <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: 14, color: brand.black, margin: "0 0 4px" }}>Trinity Solutions Insurance Agency</p>
