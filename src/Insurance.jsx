@@ -225,7 +225,7 @@ const LicenseCapture = ({ label, image, onCapture, onRemove }) => {
             background: `rgba(46,140,58,0.9)`, fontSize: 11, fontWeight: 700, color: "#fff", fontFamily: "'DM Sans', sans-serif" }}>✓ Captured</div>
         </div>
       )}
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: "none" }} />
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
     </div>
   );
 };
