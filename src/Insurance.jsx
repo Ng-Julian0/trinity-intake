@@ -360,7 +360,7 @@ const VinInput = ({ vin, vinPhoto, onVinChange, onPhotoCapture, onPhotoRemove })
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
       )}
       {mode === "camera" && (<>{photoArea(() => cameraRef.current?.click(), !!vinPhoto, vinPhoto, cameraRef, false)}
-        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile(cameraRef)} style={{ display: "none" }} /></>)}
+        <input ref={cameraRef} type="file" accept="image/*" onChange={handleFile(cameraRef)} style={{ display: "none" }} /></>)}
       {mode === "upload" && (<>{photoArea(() => uploadRef.current?.click(), !!vinPhoto, vinPhoto, uploadRef, true)}
         <input ref={uploadRef} type="file" accept="image/*" onChange={handleFile(uploadRef)} style={{ display: "none" }} /></>)}
       {mode !== "type" && !vin && vinPhoto && (
@@ -482,7 +482,7 @@ const BinderUpload = ({ photos, onAdd, onRemove }) => {
         </span>
         <span style={{ fontSize: 11.5, color: brand.textLight, fontFamily: "'DM Sans', sans-serif" }}>Tap to use camera or choose file</span>
       </div>
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" multiple onChange={handleFiles} style={{ display: "none" }} />
+      <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: "none" }} />
     </div>
   );
 };
